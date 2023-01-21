@@ -25,11 +25,13 @@ For Source 1 users, there is a helper script to reload the session file.
 
 This can be accessed by adding the repo name to your `gameinfo.txt` and opening the script from "Scripts" > "KiwifruitDev" > "Multiuser"
 
+Do not load the session file from your repo, SFM cannot understand it. Instead, load it from your mod, such as `usermod`.
+
 ## Avoid Map Loading
 
 To avoid loading the map every time the session is loaded, simply remove the map from `mapname` in the `activeClip` property in the element viewer.
 
-This will require users to load the map manually via console, or through my [Asset Browser](https://steamcommunity.com/sharedfiles/filedetails/?id=2918590103)
+This will require users to load the map manually via console, or through my [Asset Browser](https://steamcommunity.com/sharedfiles/filedetails/?id=2918590103) script.
 
 ## References
 
