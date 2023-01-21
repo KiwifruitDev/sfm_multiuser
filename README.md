@@ -19,6 +19,18 @@ This script works for both the Source 1 and Source 2 versions of SFM.
 4. Open a session specified in one of your `elements\sessions` folders.
 5. Any time the file is modified, the script will automatically commit and push the changes to your Git repository.
 
+## Helper Script
+
+For Source 1 users, there is a helper script to reload the session file.
+
+This can be accessed by adding the repo name to your `gameinfo.txt` and opening the script from "Scripts" > "KiwifruitDev" > "Multiuser"
+
+## Avoid Map Loading
+
+To avoid loading the map every time the session is loaded, simply remove the map from `mapname` in the `activeClip` property in the element viewer.
+
+This will require users to load the map manually via console, or through my [Asset Browser](https://steamcommunity.com/sharedfiles/filedetails/?id=2918590103)
+
 ## References
 
 - datamodel.py
