@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datamodel, random, os, threading, time, shutil, sys, json
+import datamodel, random, os, threading, time, sys, json
 
 print("SFM Multiuser by KiwifruitDev")
 
@@ -50,6 +50,7 @@ else:
     #config["author_last_name"] = input("Enter your Git last name: ")
     #config["author_email"] = input("Enter your Git email: ")
     config["sessions"] = input("Enter unique session names to track, separated by , (e.g. 'my_session,session2'): ")
+    config["source2"] = input("Are you using Source 2? (y/n): ")
     print("Saving config.json...")
     with open(os.path.join(cwd, "multiuser.json"), "w") as f:
         json.dump(config, f, indent=4)
@@ -195,10 +196,12 @@ class Git():
                             continue
                         # Copy the session file
                         dm = datamodel.load(os.path.join(self.repo_path, "elements", "sessions", session))
-                        dm.write(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session), "binary", 5)
-                        # Write timestamp to files_tracked[i][1]
-                        files_tracked[i][1] = os.path.getmtime(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session))
-                        #print("Copied session file %s from %s to %s" % (session, config["repo_name"], folder))
+                        try:
+                            dm.write(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session), "binary", (config["source2"] == "y" and 9 or 5))
+                            # Write timestamp to files_tracked[i][1]
+                            files_tracked[i][1] = os.path.getmtime(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session))
+                        except:
+                            pass
             self.writing = False
         return files_tracked
 
@@ -334,11 +337,15 @@ class SourceControl():
         dm = datamodel.load(self.files_tracked[index][0])
         dm.root["activeClip"] = None
         dm.root["settings"] = None
-        dm.write(self.files_tracked[index][0], "binary", 5)
-        # Save to old file
         gitPath = os.path.join(self.git.repo_path, relPath)
         os.makedirs(os.path.dirname(gitPath), exist_ok=True)
-        dm.write(gitPath, "keyvalues2", 1)
+        try:
+            dm.write(self.files_tracked[index][0], "binary", (config["source2"] == "y" and 9 or 5))
+            dm.write(gitPath, "keyvalues2", 1)
+        except:
+            print("Failed to write file: " + relPath)
+            self.git.writing = False
+            return
         # Add to git
         self.git.add(relPath)
         self.git.commit("Changed by SFM Multiuser")
