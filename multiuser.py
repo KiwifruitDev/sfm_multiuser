@@ -170,24 +170,13 @@ class Git():
             os.system("git push")
             os.chdir(cwd)
 
-    def pull(self):
+    def pull(self, files_tracked):
         if self.remote:
             self.writing = True
             os.chdir(self.repo_path)
             # Pull silently and wait for it to finish
             os.popen("git pull").read()
             os.chdir(cwd)
-            # After pull, copy our session file
-            sessions = []
-            for session in config["sessions"].split(","):
-                if session != "":
-                    # If session doesn't have .dmx extension, add it
-                    if not session.endswith(".dmx"):
-                        session += ".dmx"
-                    sessions.append(session)
-            if len(sessions) == 0:
-                print("No sessions to copy!")
-                return
             # Search every root folder in cwd for an "elements" folder
             for folder in os.listdir(os.path.join(cwd, "..", "game")):
                 # Is this a folder?
@@ -199,14 +188,19 @@ class Git():
                 # Does this folder have a sessions folder?
                 if os.path.exists(os.path.join(cwd, "..", "game", folder, "elements", "sessions")):
                     # Check if any of the sessions are in this folder
-                    for session in sessions:
-                        if os.path.exists(os.path.join(self.repo_path, "elements", "sessions", session)):
-                            if os.path.exists(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session)):
-                                # Copy the session file
-                                dm = datamodel.load(os.path.join(self.repo_path, "elements", "sessions", session))
-                                dm.write(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session), "binary", 5)
-                                print("Copied session file %s from %s to %s" % (session, config["repo_name"], folder))
+                    for i in range(len(files_tracked)):
+                        session = os.path.basename(files_tracked[i][0])
+                        # Does this session exist in this folder?
+                        if not os.path.exists(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session)):
+                            continue
+                        # Copy the session file
+                        dm = datamodel.load(os.path.join(self.repo_path, "elements", "sessions", session))
+                        dm.write(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session), "binary", 5)
+                        # Write timestamp to files_tracked[i][1]
+                        files_tracked[i][1] = os.path.getmtime(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session))
+                        #print("Copied session file %s from %s to %s" % (session, config["repo_name"], folder))
             self.writing = False
+        return files_tracked
 
     def createAuthor(self):
         # Create author.txt with first, last, and email
@@ -287,7 +281,7 @@ class SourceControl():
             if not found:
                 print("Session does not exist and won't be tracked: " + file)
                 continue
-            print(search)
+            print("Session found: " + file)
             self.files_tracked.append([search, os.path.getmtime(search)])
         if len(self.files_tracked) == 0:
             print("No files to track, exiting...")
@@ -308,7 +302,7 @@ class SourceControl():
         if self.git.writing:
             return False
         timestamp = os.path.getmtime(self.files_tracked[index][0])
-        changed = timestamp > self.files_tracked[index][1]
+        changed = timestamp != self.files_tracked[index][1]
         self.files_tracked[index][1] = timestamp
         return changed
         
@@ -318,12 +312,14 @@ class SourceControl():
     def change_thread(self):
         while True:
             for i in range(len(self.files_tracked)):
+                if self.git.writing:
+                    time.sleep(0.1)
                 if self.isChanged(i):
                     self.on_change(i)
+                if self.tick >= 50:
+                    self.files_tracked = self.git.pull(self.files_tracked)
+                    self.tick = 0
             self.tick += 1
-            if self.tick == 50:
-                self.git.pull()
-                self.tick = 0
             time.sleep(0.1)
 
     def on_change(self, index):
@@ -332,11 +328,12 @@ class SourceControl():
         relPath = os.path.relpath(self.files_tracked[index][0], cwd)
         relPath = os.path.join(*relPath.split(os.path.sep)[1:])
         relPath = os.path.join(*relPath.split(os.path.sep)[1:])
+        relPath = os.path.join(*relPath.split(os.path.sep)[1:])
         print("File timestamp updated: " + relPath)
         # Remove user data
         dm = datamodel.load(self.files_tracked[index][0])
-        #dm.root["activeClip"] = None
-        #dm.root["settings"] = None
+        dm.root["activeClip"] = None
+        dm.root["settings"] = None
         dm.write(self.files_tracked[index][0], "binary", 5)
         # Save to old file
         gitPath = os.path.join(self.git.repo_path, relPath)
