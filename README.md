@@ -16,8 +16,9 @@ This script works for both the Source 1 and Source 2 versions of SFM.
 1. Clone this repository to your computer in SFM's `SourceFilmmaker` folder. This should create an `sfm_multiuser` folder next to your `game` folder.
 2. Open the `sfm_multiuser` folder and run `start.bat` to start the script.
 3. Follow the instructions in the script to set up your Git repository and user.
-4. Open a session specified in one of your `elements\sessions` folders.
-5. Any time the file is modified, the script will automatically commit and push the changes to your Git repository.
+4. Copy the session files made within the repo to your mod folder, such as `usermod`.
+5. Open the session specified by the config your mod's `elements\sessions` folder.
+6. Any time the file is modified, the script will automatically commit and push the changes to your Git repository.
 
 ## Helper Script
 
