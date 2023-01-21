@@ -198,8 +198,10 @@ class Git():
                         dm = datamodel.load(os.path.join(self.repo_path, "elements", "sessions", session))
                         try:
                             dm.write(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session), "binary", (config["source2"] == "y" and 9 or 5))
-                            # Write timestamp to files_tracked[i][1]
-                            files_tracked[i][1] = os.path.getmtime(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session))
+                            # Is timestamp newer?
+                            if os.path.getmtime(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session)) > files_tracked[i][1]:
+                                # Write timestamp to files_tracked[i][1]
+                                files_tracked[i][1] = os.path.getmtime(os.path.join(cwd, "..", "game", folder, "elements", "sessions", session))
                         except:
                             pass
             self.writing = False
@@ -303,6 +305,7 @@ class SourceControl():
 
     def isChanged(self, index):
         if self.git.writing:
+            print("Waiting for git to finish writing (2)...")
             return False
         timestamp = os.path.getmtime(self.files_tracked[index][0])
         changed = timestamp != self.files_tracked[index][1]
@@ -316,7 +319,8 @@ class SourceControl():
         while True:
             for i in range(len(self.files_tracked)):
                 if self.git.writing:
-                    time.sleep(0.1)
+                    print("Waiting for git to finish writing...")
+                    break
                 if self.isChanged(i):
                     self.on_change(i)
                 if self.tick >= 50:
@@ -335,8 +339,8 @@ class SourceControl():
         print("File timestamp updated: " + relPath)
         # Remove user data
         dm = datamodel.load(self.files_tracked[index][0])
-        dm.root["activeClip"] = None
-        dm.root["settings"] = None
+        #dm.root["activeClip"] = None
+        #dm.root["settings"] = None
         gitPath = os.path.join(self.git.repo_path, relPath)
         os.makedirs(os.path.dirname(gitPath), exist_ok=True)
         try:
