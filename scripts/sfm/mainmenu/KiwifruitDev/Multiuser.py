@@ -38,8 +38,15 @@ class Multiuser_Window(QtGui.QWidget):
         self.reload_button = QtGui.QPushButton("Reload Session (Ctrl+R)")
         self.reload_button.clicked.connect(self.reloadSession)
         self.reload_button.setEnabled(False)
+        # Wait delay
+        self.delay_spinbox = QtGui.QSpinBox()
+        self.delay_spinbox.setRange(0, 10000)
+        self.delay_spinbox.setValue(5000)
+        self.delay_spinbox.setSuffix(" ms")
+        self.delay_spinbox.setToolTip("Delay in milliseconds before reloading session.")
         # Add to layout
         self.layout = QtGui.QVBoxLayout()
+        self.layout.addWidget(self.delay_spinbox)
         self.layout.addWidget(self.select_button)
         self.layout.addWidget(self.reload_button)
         self.setLayout(self.layout)
@@ -55,7 +62,7 @@ class Multiuser_Window(QtGui.QWidget):
         sfmApp.SaveDocument()
         sfmApp.CloseDocument(forceSilent=False)
         # Wait 5 seconds for presumably Multiuser script
-        QtCore.QTimer.singleShot(5000, self.openSession)
+        QtCore.QTimer.singleShot(self.delay_spinbox.value(), self.openSession)
 
     def openSession(self):
         # Open session
