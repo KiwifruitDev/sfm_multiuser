@@ -353,6 +353,7 @@ class SourceControl():
             self.git.writing = False
             return
         # Add to git
+        self.files_tracked = self.git.pull(self.files_tracked)
         self.git.add(relPath)
         self.git.commit("Changed by SFM Multiuser")
         self.git.push()

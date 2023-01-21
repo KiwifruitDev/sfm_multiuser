@@ -54,7 +54,11 @@ class Multiuser_Window(QtGui.QWidget):
             return
         sfmApp.SaveDocument()
         sfmApp.CloseDocument(forceSilent=False)
-        sfmApp.ProcessEvents()
+        # Wait 5 seconds for presumably Multiuser script
+        QtCore.QTimer.singleShot(5000, self.openSession)
+
+    def openSession(self):
+        # Open session
         sfmApp.OpenDocument(self.session)
 
     def selectSession(self):
