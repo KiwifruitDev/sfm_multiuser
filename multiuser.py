@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datamodel, random, os, threading, time, sys, json
+import datamodel, random, os, threading, time, sys, json, shutil
 
 print("SFM Multiuser by KiwifruitDev")
 
@@ -143,8 +143,10 @@ class Git():
                         dontSetupRemote = False
                         with open("README.md", "w") as f:
                             f.write("# %s\n\nThis repository was created by SFM Multiuser." % self.repo_path)
+                        shutil.copytree(os.path.join(cwd, "scripts"), os.path.join(self.repo_path, "scripts"))
+                        os.system("git add scripts/sfm/mainmenu/KiwifruitDev/Multiuser.py")
                         os.system("git add README.md")
-                        os.system("git commit -m \"Added README.md\"")
+                        os.system("git commit -m \"Initial commit\"")
                         os.system("git push --set-upstream origin main")
         # Query git for remote
         self.remoteSetup = os.popen("git remote get-url origin").read().strip()
