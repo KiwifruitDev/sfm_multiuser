@@ -34,10 +34,16 @@ cwd = os.getcwd()
 config = {}
 
 # Load config.json
+loaded = False
 if os.path.exists(os.path.join(cwd, "multiuser.json")):
-    with open(os.path.join(cwd, "multiuser.json"), "r") as f:
-        config = json.load(f)
-else:
+    try:
+        with open(os.path.join(cwd, "multiuser.json"), "r") as f:
+            config = json.load(f)
+        loaded = True
+    except:
+        print("Failed to load config.json. Generating new config...")
+
+if not loaded:
     # Generate config.json
     print("No config.json found.\nThe config will always be saved in the script directory. (multiuser.json)\nGenerating all possible config options...")
     config["repo_name"] = input("Enter repo name, this is where the project files are stored: ")
