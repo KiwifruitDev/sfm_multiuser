@@ -135,29 +135,34 @@ class Git():
         if not os.path.exists(os.path.join(self.repo_path, ".git")):
             dontSetupRemote = True
             print("Initializing git repository...")
-            remote = config["repo_remote"]
-            if remote != "":
-                existing = config["repo_existing"]
-                if existing == "y":
-                    os.system("git clone %s" % remote)
-                else:
-                    os.system("git init")
+            existing = config["repo_existing"]
+            if existing == "y":
+                os.chdir("..")
+                os.rmdir(self.repo_path)
+                os.system("git clone %s" % remote)
+                os.chdir(self.repo_path)
+            else:
+                os.system("git init")
+                remote = config["repo_remote"]
+                if remote != "":
                     os.system("git remote add origin %s" % remote)
-                    # Prompt to add readme
-                    should = "y" #config["repo_readme"]
-                    if should == "y":
-                        dontSetupRemote = False
-                        with open("README.md", "w") as f:
-                            f.write("# %s\n\nThis repository was created by SFM Multiuser." % self.repo_path)
-                        shutil.copytree(os.path.join(cwd, "scripts"), os.path.join(self.repo_path, "scripts"))
-                        os.system("git add scripts/sfm/mainmenu/KiwifruitDev/Multiuser.py")
-                        os.system("git add README.md")
-                        os.system("git commit -m \"Initial commit\"")
+                # Prompt to add readme
+                should = "y" #config["repo_readme"]
+                if should == "y":
+                    dontSetupRemote = False
+                    with open("README.md", "w") as f:
+                        f.write("# %s\n\nThis repository was created by SFM Multiuser." % self.repo_path)
+                    shutil.copytree(os.path.join(cwd, "scripts"), os.path.join(self.repo_path, "scripts"))
+                    os.system("git add scripts/sfm/mainmenu/KiwifruitDev/Multiuser.py")
+                    os.system("git add README.md")
+                    os.system("git commit -m \"Initial commit\"")
+                    if remote != "":
                         os.system("git push --set-upstream origin main")
         # Query git for remote
         self.remoteSetup = os.popen("git remote get-url origin").read().strip()
         if self.remoteSetup != "" and not dontSetupRemote:
             self.remote = True
+        testcwd = os.getcwd()
         os.chdir(cwd)
     
     def add(self, file_path):
