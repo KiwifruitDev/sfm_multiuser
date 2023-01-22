@@ -136,6 +136,7 @@ class Git():
             dontSetupRemote = True
             print("Initializing git repository...")
             existing = config["repo_existing"]
+            remote = config["repo_remote"]
             if existing == "y":
                 os.chdir("..")
                 os.rmdir(self.repo_path)
@@ -143,7 +144,6 @@ class Git():
                 os.chdir(self.repo_path)
             else:
                 os.system("git init")
-                remote = config["repo_remote"]
                 if remote != "":
                     os.system("git remote add origin %s" % remote)
                 # Prompt to add readme
